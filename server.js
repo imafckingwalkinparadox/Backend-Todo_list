@@ -62,6 +62,30 @@ app.get('/tareas', (req, res) => {
   });
 });  
 
+//-----------------SET-----------------------------------------------
+app.post('/agregar', (req, res) => {
+  // Obtenemos los datos enviados desde el cuerpo de la solicitud (request body)
+  const { nombre_tarea, estado } = req.body;
+
+  // Verificamos que todos los campos sean proporcionados
+  if (!nombre_tarea || !estado) {
+    return res.status(400).send('Faltan datos en la solicitud');
+  }
+
+  // Realiza la consulta INSERT para agregar una nueva tarea a la base de datos
+  const sql = 'INSERT INTO tareas (nombre_tarea, estado) VALUES (?, ?)';
+
+  // Ejecutamos la consulta con los valores proporcionados
+  db.query(sql, [nombre_tarea, estado], (err, result) => {
+    if (err) {
+      console.error('Error al insertar la tarea: ', err);
+      return res.status(500).send('Error al insertar la tarea');
+    }
+    // Si la inserción es exitosa, enviamos una respuesta con el ID de la nueva tarea
+    res.status(201).json({ id: result.insertId, nombre_tarea, estado });
+  });
+});
+
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
