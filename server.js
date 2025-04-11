@@ -58,15 +58,28 @@ app.post('/agregar', (req, res) => {
   if (!nombre || !estado || !usuario_id) {
     return res.status(400).send('Faltan datos en la solicitud');
   }
+
   const sql = 'INSERT INTO tarea (nombre, estado, usuario_id) VALUES (?, ?, ?)';
   db.query(sql, [nombre, estado, usuario_id], (err, result) => {
     if (err) {
       console.error('Error al insertar la tarea: ', err);
       return res.status(500).send('Error al insertar la tarea');
     }
-    res.status(201).json({ id: result.insertId, nombre, estado, usuario_id });
+
+    // Recuperamos solo la tarea recién agregada
+    const sqlGetTarea = 'SELECT * FROM tarea WHERE id = ?';
+    db.query(sqlGetTarea, [result.insertId], (err, results) => {
+      if (err) {
+        console.error('Error al recuperar la tarea: ', err);
+        return res.status(500).send('Error al recuperar la tarea');
+      }
+      // Enviamos solo la tarea recién agregada al frontend
+      res.status(201).json(results[0]);  // Enviamos solo el primer resultado (la tarea agregada)
+    });
   });
 });
+
+
 
 // Ruta para el login
 app.post('/login', (req, res) => {
